@@ -10,142 +10,156 @@ export default class LinkedList {
     this.headNode = null;
   }
 
+  // add value to the end of the list
   append(value) {
-    // add value to the end of the list
-    if (this.headNode === null) {
-      this.headNode = new Node(value);
-      return;
-    }
+    const nodeToAdd = new Node(value);
     let lastNode = this.head();
-    while (lastNode.nextNode) lastNode = lastNode.nextNode;
-    lastNode.nextNode = new Node(value);
+    if (lastNode === null) this.headNode = nodeToAdd;
+    else {
+      while (lastNode.nextNode) lastNode = lastNode.nextNode;
+      lastNode.nextNode = nodeToAdd;
+    }
   }
 
+  // add value to the start of the list
   prepend(value) {
-    // add value to the start of the list
-    if (this.head() === null) this.headNode = new Node(value);
-    const addedNode = new Node(value);
-    addedNode.nextNode = this.head();
-    this.headNode = addedNode;
+    const nodeToAdd = new Node(value);
+    const firstNode = this.head();
+    if (firstNode === null) this.headNode = nodeToAdd;
+    else {
+      nodeToAdd.nextNode = firstNode;
+      this.headNode = nodeToAdd;
+    }
   }
 
+  // total number of nodes in the list
   size() {
-    // total number of nodes in the list
-    if (this.headNode === null) return 0;
-    let counter = 1;
-    let current = this.head();
-    while (current.nextNode) {
-      current = current.nextNode;
+    let counter = 0;
+    let currentNode = this.head();
+    while (currentNode) {
       counter += 1;
+      currentNode = currentNode.nextNode;
     }
     return counter;
   }
 
+  // first node of the list
   head() {
-    // first node of the list
     return this.headNode;
   }
 
+  // last node of the list
   tail() {
-    // last node of the list
-    if (this.headNode === null) return null;
     let lastNode = this.head();
-    while (lastNode.nextNode) lastNode = lastNode.nextNode;
+    if (lastNode === null) return null;
+    else {
+      while (lastNode.nextNode) lastNode = lastNode.nextNode;
+      return lastNode;
+    }
+  }
+
+  // node at the given index
+  at(index) {
+    if (typeof index !== 'number') return;
+    if (index < 0 || this.size() <= index)
+      throw new Error('Trying to access index out of bounds');
+    let currentNode = this.head();
+    for (let i = 0; i < index; i += 1) {
+      currentNode = currentNode.nextNode;
+    }
+    return currentNode;
+  }
+
+  // remove last node from the list
+  pop() {
+    let secondToLastNode = this.head();
+    if (!secondToLastNode || !secondToLastNode.nextNode) {
+      this.headNode = null;
+      return secondToLastNode;
+    }
+    let lastNode = secondToLastNode.nextNode;
+    while (lastNode.nextNode) {
+      secondToLastNode = lastNode;
+      lastNode = lastNode.nextNode;
+    }
+    secondToLastNode.nextNode = null;
     return lastNode;
   }
 
-  at(index) {
-    // node at the given index
-    if (index < 0) return null;
-    let current = this.head();
-    for (let i = 0; i < index; i += 1) {
-      current = current.nextNode;
-    }
-    return current;
-  }
-
-  pop() {
-    // remove last node from the list
-    if (this.headNode === null) return null;
-    let previous = this.head();
-    let current = previous.nextNode;
-    if (current === null) {
-      this.headNode = null;
-      return previous;
-    }
-    while (current.nextNode) {
-      current = current.nextNode;
-      previous = previous.nextNode;
-    }
-    previous.nextNode = null;
-    return current;
-  }
-
+  // is value in the list?
   contains(value) {
-    // is value in the list?
-    let current = this.head();
-    while (current) {
-      if (current.value === value) return true;
-      current = current.nextNode;
+    let currentNode = this.head();
+    while (currentNode) {
+      if (currentNode.value === value) return true;
+      currentNode = currentNode.nextNode;
     }
     return false;
   }
 
+  // return index of value in the list or null if not found
   find(value) {
-    // index of value in the list
-    let idx = 0;
-    let current = this.head();
-    while (current) {
-      if (current.value === value) return idx;
-      current = current.nextNode;
-      idx += 1;
+    let index = 0;
+    let currentNode = this.head();
+    while (currentNode) {
+      if (currentNode.value === value) return index;
+      currentNode = currentNode.nextNode;
+      index += 1;
     }
     return null;
   }
 
+  // string representation of the list
   toString() {
-    // string representation of the list
-    const nodes = [];
-    let current = this.head();
-    while (current) {
-      nodes.push(`( ${current.value} )`);
-      current = current.nextNode;
+    const nodeValues = [];
+    let currentNode = this.head();
+    while (currentNode) {
+      nodeValues.push(`( ${currentNode.value} )`);
+      currentNode = currentNode.nextNode;
     }
-    nodes.push('null');
-    return nodes.join(' -> ');
+    nodeValues.push('null');
+    return nodeValues.join(' -> ');
   }
 
+  // insert a node with value at given index
   insertAt(value, index) {
-    // insert a node with value at given index
-    if (index <= 0) return this.prepend(value);
-    else if (this.size() <= index) return this.append(value);
-    let previous = this.head();
-    let current = previous.nextNode;
-    for (let i = 1; i < index; i += 1) {
-      previous = current;
-      current = current.nextNode;
+    if (typeof index !== 'number') return;
+    const L = this.size();
+    if (index === 0) this.prepend(value);
+    else if (index === L) this.append(value);
+    else if (index < 0 || L < index)
+      throw new Error('Trying to access index out of bounds');
+    else {
+      const nodeToAdd = new Node(value);
+      let previousNode = this.head();
+      let currentNode = previousNode.nextNode;
+      for (let i = 1; i < index; i += 1) {
+        previousNode = currentNode;
+        currentNode = currentNode.nextNode;
+      }
+      previousNode.nextNode = nodeToAdd;
+      nodeToAdd.nextNode = currentNode;
     }
-    const addedNode = new Node(value);
-    previous.nextNode = addedNode;
-    addedNode.nextNode = current;
   }
 
+  // remove the node at given index
   removeAt(index) {
-    // remove the node at given index
-    if (index < 0) return;
+    if (typeof index !== 'number') return;
+    const L = this.size();
+    if (index < 0 || L <= index)
+      throw new Error('Trying to access index out of bounds');
     else if (index === 0) {
-      const removedNode = this.head();
-      this.headNode = removedNode.nextNode;
-      return removedNode;
+      const nodeToRemove = this.head();
+      this.headNode = nodeToRemove.nextNode;
+      return nodeToRemove;
+    } else {
+      let previousNode = this.head();
+      let nodeToRemove = previousNode.nextNode;
+      for (let i = 1; i < index; i += 1) {
+        previousNode = nodeToRemove;
+        nodeToRemove = nodeToRemove.nextNode;
+      }
+      previousNode.nextNode = nodeToRemove.nextNode;
+      return nodeToRemove;
     }
-    let previous = this.head();
-    let current = previous.nextNode;
-    for (let i = 1; i < index; i += 1) {
-      previous = current;
-      current = current.nextNode;
-      if (current === null) return;
-    }
-    previous.nextNode = current.nextNode;
-    return current;
   }
 }
