@@ -7,7 +7,12 @@ try {
 } catch {
   console.log('***removeAt on empty list handled***');
 }
-list.insertAt('cat', 0);
+try {
+  list.insertAt('cat', 0);
+} catch {
+  console.log('***insertAt on empty list handled***');
+}
+list.append('cat');
 console.log(list.removeAt(0)); // Node('cat')
 console.log(list.toString()); // 'null'
 list.append('cat');
@@ -64,5 +69,11 @@ list.insertAt('kkkkk', [1]); // does nothing
 console.log(list.at('two')); // undefined
 console.log(list.toString()); // should be same as before
 list.insertAt('head', 0);
-list.insertAt('tail', list.size());
-console.log(list.toString()); // ( head ) -> ( dog ) -> ( cat ) -> ( parrot ) -> ( beaver ) -> ( hamster ) -> ( snake ) -> ( turtle ) -> ( tail ) -> null
+try {
+  list.insertAt('tail', list.size());
+} catch {
+  console.log('***insertAt with list size as index handled***');
+}
+list.insertAt('tail', list.size() - 1);
+list.insertAt(list.pop().value, list.size() - 1);
+console.log(list.toString()); // ( head ) -> ( dog ) -> ( cat ) -> ( parrot ) -> ( hamster ) -> ( snake ) -> ( turtle ) -> ( tail ) -> null

@@ -123,43 +123,40 @@ export default class LinkedList {
   // insert a node with value at given index
   insertAt(value, index) {
     if (typeof index !== 'number') return;
-    const L = this.size();
-    if (index === 0) this.prepend(value);
-    else if (index === L) this.append(value);
-    else if (index < 0 || L < index)
+    if (index < 0 || this.size() <= index)
       throw new Error('Trying to access index out of bounds');
+    else if (index === 0) this.prepend(value);
     else {
-      const nodeToAdd = new Node(value);
-      let previousNode = this.head();
-      let currentNode = previousNode.nextNode;
+      let nodeBeforeIndex = this.head();
+      let nodeAtIndex = nodeBeforeIndex.nextNode;
       for (let i = 1; i < index; i += 1) {
-        previousNode = currentNode;
-        currentNode = currentNode.nextNode;
+        nodeBeforeIndex = nodeAtIndex;
+        nodeAtIndex = nodeAtIndex.nextNode;
       }
-      previousNode.nextNode = nodeToAdd;
-      nodeToAdd.nextNode = currentNode;
+      const nodeToAdd = new Node(value);
+      nodeBeforeIndex.nextNode = nodeToAdd;
+      nodeToAdd.nextNode = nodeAtIndex;
     }
   }
 
   // remove the node at given index
   removeAt(index) {
     if (typeof index !== 'number') return;
-    const L = this.size();
-    if (index < 0 || L <= index)
+    if (index < 0 || this.size() <= index)
       throw new Error('Trying to access index out of bounds');
     else if (index === 0) {
       const nodeToRemove = this.head();
       this.headNode = nodeToRemove.nextNode;
       return nodeToRemove;
     } else {
-      let previousNode = this.head();
-      let nodeToRemove = previousNode.nextNode;
+      let nodeBeforeIndex = this.head();
+      let nodeAtIndex = nodeBeforeIndex.nextNode;
       for (let i = 1; i < index; i += 1) {
-        previousNode = nodeToRemove;
-        nodeToRemove = nodeToRemove.nextNode;
+        nodeBeforeIndex = nodeAtIndex;
+        nodeAtIndex = nodeAtIndex.nextNode;
       }
-      previousNode.nextNode = nodeToRemove.nextNode;
-      return nodeToRemove;
+      nodeBeforeIndex.nextNode = nodeAtIndex.nextNode;
+      return nodeAtIndex;
     }
   }
 }
