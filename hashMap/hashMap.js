@@ -30,57 +30,38 @@ export default class HashMap {
 
   // set a key-value pair in the map
   set(key, value) {
-    // update existing key, or...
-    if (this.has(key)) {
-      const bucket = this.hash(key);
-      let currentNode = this.buckets[bucket];
-      while (true) {
-        if (currentNode.key === key) {
-          currentNode.value = value;
-          return;
-        }
-        currentNode = currentNode.nextNode;
-      }
-    }
-    // ...add new key
-    const requiresGrowth =
-      this.LOAD_FACTOR * this.capacity < this.entryCount + 1;
-    if (requiresGrowth) {
-      // double the capacity and re-populate new buckets
-      this.capacity *= 2;
-      const newBuckets = new Array(this.capacity);
-      for (const [k, v] of this.entries()) {
-        const bucket = this.hash(k);
-        if (bucket < 0 || this.capacity <= bucket)
-          throw new Error('Trying to access index out of bounds');
-        let currentNode = newBuckets[bucket];
-        if (!currentNode) newBuckets[bucket] = new Node(k, v);
-        else {
-          while (currentNode.nextNode) currentNode = currentNode.nextNode;
-          currentNode.nextNode = new Node(k, v);
-        }
-      }
-      this.buckets = newBuckets;
-    }
-    // add new node to the map
-    const bucket = this.hash(key);
-    if (bucket < 0 || this.capacity <= bucket)
+    const index = this.hash(key);
+    if (index < 0 || this.capacity <= index)
       throw new Error('Trying to access index out of bounds');
-    let currentNode = this.buckets[bucket];
-    if (!currentNode) this.buckets[bucket] = new Node(key, value);
-    else {
-      while (currentNode.nextNode) currentNode = currentNode.nextNode;
-      currentNode.nextNode = new Node(key, value);
+    let lastNode = this.buckets[index];
+    if (!lastNode) {
+      this.buckets[index] = new Node(key, value);
+    } else {
+      while (true) {
+        if (lastNode.key === key) {
+          lastNode.value = value;
+          return;
+        } else if (lastNode.nextNode === null) {
+          lastNode.nextNode = new Node(key, value);
+          break;
+        } else lastNode = lastNode.nextNode;
+      }
     }
     this.entryCount += 1;
+
+    const isOverloaded = this.LOAD_FACTOR * this.capacity < this.entryCount;
+    if (isOverloaded) {
+      this.capacity *= 2;
+      this._rebuild();
+    }
   }
 
   // return value assigned to a key or null if the key is absent
   get(key) {
-    const bucket = this.hash(key);
-    if (bucket < 0 || this.capacity <= bucket)
+    const index = this.hash(key);
+    if (index < 0 || this.capacity <= index)
       throw new Error('Trying to access index out of bounds');
-    let currentNode = this.buckets[bucket];
+    let currentNode = this.buckets[index];
     while (currentNode) {
       if (currentNode.key === key) return currentNode.value;
       currentNode = currentNode.nextNode;
@@ -90,10 +71,10 @@ export default class HashMap {
 
   // check if the map contains specific key
   has(key) {
-    const bucket = this.hash(key);
-    if (bucket < 0 || this.capacity <= bucket)
+    const index = this.hash(key);
+    if (index < 0 || this.capacity <= index)
       throw new Error('Trying to access index out of bounds');
-    let currentNode = this.buckets[bucket];
+    let currentNode = this.buckets[index];
     while (currentNode) {
       if (currentNode.key === key) return true;
       currentNode = currentNode.nextNode;
@@ -103,27 +84,28 @@ export default class HashMap {
 
   // remove the node with given key fom the map & return true; false otherwise
   remove(key) {
-    const bucket = this.hash(key);
-    if (bucket < 0 || this.capacity <= bucket)
+    const index = this.hash(key);
+    if (index < 0 || this.capacity <= index)
       throw new Error('Trying to access index out of bounds');
-    let currentNode = this.buckets[bucket];
-    if (!currentNode) return false;
-    else if (currentNode.key === key) {
-      this.buckets[bucket] = currentNode.nextNode ?? undefined;
+    let nodeBefore = this.buckets[index];
+    if (!nodeBefore) return false;
+    else if (nodeBefore.key === key) {
+      this.buckets[index] = nodeBefore.nextNode ?? undefined;
       this.entryCount -= 1;
       return true;
-    }
-    let next = currentNode.nextNode;
-    while (next) {
-      if (next.key === key) {
-        currentNode.nextNode = next.nextNode;
-        this.entryCount -= 1;
-        return true;
+    } else {
+      let nodeCurrent = nodeBefore.nextNode;
+      while (nodeCurrent) {
+        if (nodeCurrent.key === key) {
+          nodeBefore.nextNode = nodeCurrent.nextNode;
+          this.entryCount -= 1;
+          return true;
+        }
+        nodeBefore = nodeCurrent;
+        nodeCurrent = nodeBefore.nextNode;
       }
-      currentNode = next;
-      next = currentNode.nextNode;
+      return false;
     }
-    return false;
   }
 
   // number of keys stored in the map
@@ -131,7 +113,7 @@ export default class HashMap {
     return this.entryCount;
   }
 
-  // remove all entries from the map
+  // remove all entries from the map and restore the defaults
   clear() {
     this.capacity = this.BASE_CAPACITY;
     this.entryCount = 0;
@@ -141,8 +123,8 @@ export default class HashMap {
   // return array with all keys from the map
   keys() {
     const keysSeen = [];
-    for (const bucket of this.buckets) {
-      let currentNode = bucket;
+    for (let i = 0; i < this.capacity; i += 1) {
+      let currentNode = this.buckets[i];
       while (currentNode) {
         keysSeen.push(currentNode.key);
         currentNode = currentNode.nextNode;
@@ -154,8 +136,8 @@ export default class HashMap {
   // return array with all values from the map
   values() {
     const valuesSeen = [];
-    for (const bucket of this.buckets) {
-      let currentNode = bucket;
+    for (let i = 0; i < this.capacity; i += 1) {
+      let currentNode = this.buckets[i];
       while (currentNode) {
         valuesSeen.push(currentNode.value);
         currentNode = currentNode.nextNode;
@@ -167,8 +149,8 @@ export default class HashMap {
   // return array with each key-value pair from the map
   entries() {
     const entriesSeen = [];
-    for (const bucket of this.buckets) {
-      let currentNode = bucket;
+    for (let i = 0; i < this.capacity; i += 1) {
+      let currentNode = this.buckets[i];
       while (currentNode) {
         const entry = [currentNode.key, currentNode.value];
         entriesSeen.push(entry);
@@ -176,5 +158,23 @@ export default class HashMap {
       }
     }
     return entriesSeen;
+  }
+
+  // repopulate the enlarged bucket array
+  _rebuild() {
+    const newBuckets = new Array(this.capacity);
+    for (const [k, v] of this.entries()) {
+      const index = this.hash(k);
+      if (index < 0 || this.capacity <= index)
+        throw new Error('Trying to access index out of bounds');
+      const nodeToAdd = new Node(k, v);
+      let lastNode = newBuckets[index];
+      if (!lastNode) newBuckets[index] = nodeToAdd;
+      else {
+        while (lastNode.nextNode) lastNode = lastNode.nextNode;
+        lastNode.nextNode = nodeToAdd;
+      }
+    }
+    this.buckets = newBuckets;
   }
 }
