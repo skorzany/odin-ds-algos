@@ -2,6 +2,8 @@ import HashMap from './hashMap.js';
 
 // instantiation and setting values
 const test = new HashMap();
+console.log(test.hash('grape') === test.hash('hat')); // true
+console.log(test.hash('apple') !== test.hash('grape')); // true
 test.set('apple', 'red');
 test.set('banana', 'yellow');
 test.set('carrot', 'orange');
