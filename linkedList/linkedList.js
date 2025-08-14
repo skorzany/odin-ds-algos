@@ -13,21 +13,21 @@ export default class LinkedList {
   // add value to the end of the list
   append(value) {
     const nodeToAdd = new Node(value);
-    let lastNode = this.head();
-    if (lastNode === null) this.headNode = nodeToAdd;
+    let nodeLast = this.head();
+    if (nodeLast === null) this.headNode = nodeToAdd;
     else {
-      while (lastNode.nextNode) lastNode = lastNode.nextNode;
-      lastNode.nextNode = nodeToAdd;
+      while (nodeLast.nextNode) nodeLast = nodeLast.nextNode;
+      nodeLast.nextNode = nodeToAdd;
     }
   }
 
   // add value to the start of the list
   prepend(value) {
     const nodeToAdd = new Node(value);
-    const firstNode = this.head();
-    if (firstNode === null) this.headNode = nodeToAdd;
+    const nodeFirst = this.head();
+    if (nodeFirst === null) this.headNode = nodeToAdd;
     else {
-      nodeToAdd.nextNode = firstNode;
+      nodeToAdd.nextNode = nodeFirst;
       this.headNode = nodeToAdd;
     }
   }
@@ -35,10 +35,10 @@ export default class LinkedList {
   // total number of nodes in the list
   size() {
     let counter = 0;
-    let currentNode = this.head();
-    while (currentNode) {
+    let nodeCurrent = this.head();
+    while (nodeCurrent) {
       counter += 1;
-      currentNode = currentNode.nextNode;
+      nodeCurrent = nodeCurrent.nextNode;
     }
     return counter;
   }
@@ -50,11 +50,11 @@ export default class LinkedList {
 
   // last node of the list
   tail() {
-    let lastNode = this.head();
-    if (lastNode === null) return null;
+    let nodeLast = this.head();
+    if (nodeLast === null) return null;
     else {
-      while (lastNode.nextNode) lastNode = lastNode.nextNode;
-      return lastNode;
+      while (nodeLast.nextNode) nodeLast = nodeLast.nextNode;
+      return nodeLast;
     }
   }
 
@@ -63,35 +63,33 @@ export default class LinkedList {
     if (typeof index !== 'number') return;
     if (index < 0 || this.size() <= index)
       throw new Error('Trying to access index out of bounds');
-    let currentNode = this.head();
-    for (let i = 0; i < index; i += 1) {
-      currentNode = currentNode.nextNode;
-    }
-    return currentNode;
+    let nodeCurrent = this.head();
+    for (let i = 0; i < index; i += 1) nodeCurrent = nodeCurrent.nextNode;
+    return nodeCurrent;
   }
 
   // remove last node from the list
   pop() {
-    let secondToLastNode = this.head();
-    if (!secondToLastNode || !secondToLastNode.nextNode) {
+    let nodeSecondToLast = this.head();
+    if (!nodeSecondToLast || !nodeSecondToLast.nextNode) {
       this.headNode = null;
-      return secondToLastNode;
+      return nodeSecondToLast;
     }
-    let lastNode = secondToLastNode.nextNode;
-    while (lastNode.nextNode) {
-      secondToLastNode = lastNode;
-      lastNode = lastNode.nextNode;
+    let nodeLast = nodeSecondToLast.nextNode;
+    while (nodeLast.nextNode) {
+      nodeSecondToLast = nodeLast;
+      nodeLast = nodeLast.nextNode;
     }
-    secondToLastNode.nextNode = null;
-    return lastNode;
+    nodeSecondToLast.nextNode = null;
+    return nodeLast;
   }
 
   // is value in the list?
   contains(value) {
-    let currentNode = this.head();
-    while (currentNode) {
-      if (currentNode.value === value) return true;
-      currentNode = currentNode.nextNode;
+    let nodeCurrent = this.head();
+    while (nodeCurrent) {
+      if (nodeCurrent.value === value) return true;
+      nodeCurrent = nodeCurrent.nextNode;
     }
     return false;
   }
@@ -99,10 +97,10 @@ export default class LinkedList {
   // return index of value in the list or null if not found
   find(value) {
     let index = 0;
-    let currentNode = this.head();
-    while (currentNode) {
-      if (currentNode.value === value) return index;
-      currentNode = currentNode.nextNode;
+    let nodeCurrent = this.head();
+    while (nodeCurrent) {
+      if (nodeCurrent.value === value) return index;
+      nodeCurrent = nodeCurrent.nextNode;
       index += 1;
     }
     return null;
@@ -111,10 +109,10 @@ export default class LinkedList {
   // string representation of the list
   toString() {
     const nodeValues = [];
-    let currentNode = this.head();
-    while (currentNode) {
-      nodeValues.push(`( ${currentNode.value} )`);
-      currentNode = currentNode.nextNode;
+    let nodeCurrent = this.head();
+    while (nodeCurrent) {
+      nodeValues.push(`( ${nodeCurrent.value} )`);
+      nodeCurrent = nodeCurrent.nextNode;
     }
     nodeValues.push('null');
     return nodeValues.join(' -> ');
