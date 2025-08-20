@@ -61,10 +61,8 @@ export default class Tree {
     // value has no children (leaf node)
     if (nodeCurrent.left === null && nodeCurrent.right === null) {
       if (nodePrevious === null) this.root = null;
-      else {
-        if (value < nodePrevious.data) nodePrevious.left = null;
-        else nodePrevious.right = null;
-      }
+      else if (value < nodePrevious.data) nodePrevious.left = null;
+      else nodePrevious.right = null;
     }
     // value has one child
     else if (nodeCurrent.left === null || nodeCurrent.right === null) {
@@ -87,20 +85,76 @@ export default class Tree {
     }
   }
 
-  // returns the node with given value
-  find(value) {}
+  // returns the node with given value or null if not found
+  find(value) {
+    let nodeCurrent = this.root;
+    while (nodeCurrent) {
+      if (nodeCurrent.data === value) break;
+      if (value < nodeCurrent.data) nodeCurrent = nodeCurrent.left;
+      else nodeCurrent = nodeCurrent.right;
+    }
+    return nodeCurrent;
+  }
 
-  // traverse the tree breadth-first and call the callback on each traversed node
-  levelOrderForEach(callback) {}
+  // iteratively traverse the tree breadth-first and call the callback on each node
+  levelOrderForEach(callback) {
+    if (this.root === null) return;
+    if (typeof callback !== 'function')
+      throw new Error('No callback function provided');
+    const queue = [this.root];
+    for (let node of queue) {
+      callback(node);
+      if (node.left) queue.push(node.left);
+      if (node.right) queue.push(node.right);
+    }
+  }
 
-  // traverse the tree depth-first and call the callback on each traversed node
-  inOrderForEach(callback) {}
+  // iteratively traverse the tree depth-first and call the callback on each node
+  inOrderForEach(callback) {
+    if (typeof callback !== 'function')
+      throw new Error('No callback function provided');
+    const stack = [];
+    let nodeCurrent = this.root;
+    while (stack.length || nodeCurrent) {
+      while (nodeCurrent) {
+        stack.push(nodeCurrent);
+        nodeCurrent = nodeCurrent.left;
+      }
+      nodeCurrent = stack.pop();
+      callback(nodeCurrent);
+      nodeCurrent = nodeCurrent.right;
+    }
+  }
 
-  // traverse the tree depth-first and call the callback on each traversed node
-  preOrderForEach(callback) {}
+  // iteratively traverse the tree depth-first and call the callback on each node
+  preOrderForEach(callback) {
+    if (this.root === null) return;
+    if (typeof callback !== 'function')
+      throw new Error('No callback function provided');
+    const stack = [this.root];
+    while (stack.length) {
+      const nodeCurrent = stack.pop();
+      callback(nodeCurrent);
+      if (nodeCurrent.right) stack.push(nodeCurrent.right);
+      if (nodeCurrent.left) stack.push(nodeCurrent.left);
+    }
+  }
 
-  // traverse the tree depth-first and call the callback on each traversed node
-  postOrderForEach(callback) {}
+  // iteratively traverse the tree depth-first and call the callback on each node
+  postOrderForEach(callback) {
+    if (this.root === null) return;
+    if (typeof callback !== 'function')
+      throw new Error('No callback function provided');
+    const stack = [this.root];
+    const traversed = [];
+    while (stack.length) {
+      const nodeCurrent = stack.pop();
+      traversed.push(nodeCurrent);
+      if (nodeCurrent.left) stack.push(nodeCurrent.left);
+      if (nodeCurrent.right) stack.push(nodeCurrent.right);
+    }
+    traversed.reverse().forEach(callback);
+  }
 
   // returns the height of the node with given value (longest path from that node to leaf node)
   height(value) {}
@@ -112,5 +166,9 @@ export default class Tree {
   isBalanced() {}
 
   // rebalance an unbalanced tree
-  rebalance() {}
+  rebalance() {
+    const sortedData = [];
+    this.inOrderForEach((node) => sortedData.push(node.data));
+    this.root = this._buildRecursively(sortedData, 0, sortedData.length - 1);
+  }
 }

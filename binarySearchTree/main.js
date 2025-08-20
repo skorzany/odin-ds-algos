@@ -16,6 +16,8 @@ const prettyPrint = (node, prefix = '', isLeft = true) => {
   }
 };
 
+const printData = (node) => console.log(node.data);
+
 console.log('initial tree');
 console.log(prettyPrint(x.root));
 x.insert(400);
@@ -42,3 +44,12 @@ console.log(prettyPrint(x.root));
 x.deleteItem(50);
 console.log('after deleting 50 (root node with two children)');
 console.log(prettyPrint(x.root));
+console.log('=== TRAVERSALS ===');
+console.log('*levelOrder print*');
+x.levelOrderForEach(printData);
+console.log('*preOrder print*');
+x.preOrderForEach(printData);
+console.log('*postOrder print*');
+x.postOrderForEach(printData);
+console.log('*inOrder print*');
+x.inOrderForEach(printData);
