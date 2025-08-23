@@ -1,8 +1,8 @@
+/* eslint-disable no-console */
 import Tree from './binarySearchTree.js';
 
-const test = [600, 100, 400, 400, 400, 500, 20, 30, 40, 50, 22];
-const x = new Tree(test);
-
+// driver code
+// helper functions:
 const prettyPrint = (node, prefix = '', isLeft = true) => {
   if (node === null) {
     return;
@@ -18,38 +18,66 @@ const prettyPrint = (node, prefix = '', isLeft = true) => {
 
 const printData = (node) => console.log(node.data);
 
-console.log('initial tree');
-console.log(prettyPrint(x.root));
-x.insert(400);
-console.log('after inserting a duplicate');
-console.log(prettyPrint(x.root));
-x.insert(1000);
-console.log('after inserting largest value yet');
-console.log(prettyPrint(x.root));
-x.insert(-2);
-console.log('after inserting smallest value yet');
-console.log(prettyPrint(x.root));
-x.deleteItem(-2);
-console.log('after deleting -2 (leaf node)');
-console.log(prettyPrint(x.root));
-x.deleteItem(500);
-console.log('after deleting 500 (node with single child)');
-console.log(prettyPrint(x.root));
-x.deleteItem(Math.PI);
-console.log('after deleting nonexistent value');
-console.log(prettyPrint(x.root));
-x.deleteItem(22);
-console.log('after deleting 22 (node with two children inside the tree)');
-console.log(prettyPrint(x.root));
-x.deleteItem(50);
-console.log('after deleting 50 (root node with two children)');
-console.log(prettyPrint(x.root));
-console.log('=== TRAVERSALS ===');
-console.log('*levelOrder print*');
-x.levelOrderForEach(printData);
-console.log('*preOrder print*');
-x.preOrderForEach(printData);
-console.log('*postOrder print*');
-x.postOrderForEach(printData);
-console.log('*inOrder print*');
-x.inOrderForEach(printData);
+const randomNumbers = (maxNumber = 100, count = 10) => {
+  const numbers = [];
+  for (let i = 0; i < count; i += 1)
+    numbers.push(Math.floor(Math.random() * (maxNumber + 1)));
+  return numbers;
+};
+
+// working with the tree
+const myTree = new Tree(randomNumbers());
+console.log('=== initial tree ===');
+console.log(prettyPrint(myTree.root));
+console.log('initial balance:', myTree.isBalanced());
+console.log('=== traversals ===');
+console.log('Breadth-first:');
+myTree.levelOrderForEach(printData);
+console.log('Depth-first:');
+console.log('*preorder:');
+myTree.preOrderForEach(printData);
+console.log('*postorder:');
+myTree.postOrderForEach(printData);
+console.log('*inorder:');
+myTree.inOrderForEach(printData);
+console.log('insert big values with some duplicates to unbalance the tree...');
+myTree.insert(200);
+myTree.insert(300);
+myTree.insert(400);
+myTree.insert(500);
+myTree.insert(250);
+myTree.insert(345);
+myTree.insert(346);
+myTree.insert(154);
+myTree.insert(111);
+myTree.insert(177);
+for (let n = 0; n < 10; n += 1) myTree.insert(101);
+console.log('=== unbalanced tree ===');
+console.log(prettyPrint(myTree.root));
+console.log('balance after insertion:', myTree.isBalanced());
+console.log('height of unbalanced tree root:', myTree.height(myTree.root.data)); // should match the current number of levels, counting from 0
+
+myTree.rebalance();
+console.log('=== rebalanced tree ===');
+console.log(prettyPrint(myTree.root));
+console.log('balance after rebuilding:', myTree.isBalanced());
+console.log('=== new traversals ===');
+console.log('Breadth-first:');
+myTree.levelOrderForEach(printData);
+console.log('Depth-first:');
+console.log('*preorder:');
+myTree.preOrderForEach(printData);
+console.log('*postorder:');
+myTree.postOrderForEach(printData);
+console.log('*inorder:');
+myTree.inOrderForEach(printData);
+console.log('=== other methods ===');
+console.log('roots height:', myTree.height(myTree.root.data)); // should match the current number of levels, counting from 0
+console.log('roots depth:', myTree.depth(myTree.root.data));
+console.log('find existing value:', myTree.find(346));
+console.log('find non-existing value:', myTree.find(-Math.PI));
+console.log('deleting root twice...');
+myTree.deleteItem(myTree.root.data);
+myTree.deleteItem(myTree.root.data);
+console.log('balance after deletion:', myTree.isBalanced());
+console.log(prettyPrint(myTree.root));

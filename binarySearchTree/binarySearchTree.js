@@ -1,3 +1,6 @@
+/* eslint-disable no-underscore-dangle */
+import Queue from '../queue/queue.js';
+
 class Node {
   constructor(data) {
     this.data = data;
@@ -11,14 +14,14 @@ export default class Tree {
     this.root = this.buildTree(array);
   }
 
-  // turns an array of data into a balanced binary tree; returns root node
+  // turns an array of data into balanced binary search tree; returns root node
   buildTree(array) {
     const uniques = new Set(array);
     const ordered = Array.from(uniques).sort((x, y) => x - y);
     return this._buildRecursively(ordered, 0, ordered.length - 1);
   }
 
-  // helper method for recursively building a tree
+  // helper method for recursively building the tree
   _buildRecursively(array, start, end) {
     if (end < start) return null;
     const rootIndex = Math.floor(0.5 * (start + end));
@@ -30,13 +33,14 @@ export default class Tree {
 
   // insert unique value into the tree
   insert(value) {
+    if (value === null || value === undefined) return;
     let nodePrevious = null;
     let nodeCurrent = this.root;
     while (nodeCurrent) {
+      if (nodeCurrent.data === value) return;
       nodePrevious = nodeCurrent;
-      if (value < nodeCurrent.data) nodeCurrent = nodeCurrent.left;
-      else if (nodeCurrent.data < value) nodeCurrent = nodeCurrent.right;
-      else return;
+      nodeCurrent =
+        value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
     }
     if (nodePrevious === null) this.root = new Node(value);
     else if (value < nodePrevious.data) nodePrevious.left = new Node(value);
@@ -45,16 +49,14 @@ export default class Tree {
 
   // iteratively remove value from the tree
   deleteItem(value) {
+    if (value === null || value === undefined) return;
     let nodePrevious = null;
     let nodeCurrent = this.root;
-    // move pointers towards the value
     while (nodeCurrent) {
       if (nodeCurrent.data === value) break;
-      else {
-        nodePrevious = nodeCurrent;
-        nodeCurrent =
-          value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
-      }
+      nodePrevious = nodeCurrent;
+      nodeCurrent =
+        value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
     }
     // value not found
     if (nodeCurrent === null) return;
@@ -87,6 +89,7 @@ export default class Tree {
 
   // returns the node with given value or null if not found
   find(value) {
+    if (value === null || value === undefined) return null;
     let nodeCurrent = this.root;
     while (nodeCurrent) {
       if (nodeCurrent.data === value) break;
@@ -96,20 +99,22 @@ export default class Tree {
     return nodeCurrent;
   }
 
-  // iteratively traverse the tree breadth-first and call the callback on each node
+  // iteratively traverse the tree breadth-first 'level order' and call the callback on each node
   levelOrderForEach(callback) {
     if (this.root === null) return;
     if (typeof callback !== 'function')
       throw new Error('No callback function provided');
-    const queue = [this.root];
-    for (let node of queue) {
-      callback(node);
-      if (node.left) queue.push(node.left);
-      if (node.right) queue.push(node.right);
+    const queue = new Queue();
+    queue.enqueue(this.root);
+    while (!queue.isEmpty()) {
+      const nodeCurrent = queue.dequeue().data;
+      callback(nodeCurrent);
+      if (nodeCurrent.left) queue.enqueue(nodeCurrent.left);
+      if (nodeCurrent.right) queue.enqueue(nodeCurrent.right);
     }
   }
 
-  // iteratively traverse the tree depth-first and call the callback on each node
+  // iteratively traverse the tree depth-first 'in order' (left, root, right) and call the callback on each node
   inOrderForEach(callback) {
     if (typeof callback !== 'function')
       throw new Error('No callback function provided');
@@ -126,7 +131,7 @@ export default class Tree {
     }
   }
 
-  // iteratively traverse the tree depth-first and call the callback on each node
+  // iteratively traverse the tree depth-first 'pre order' (root, left, right) and call the callback on each node
   preOrderForEach(callback) {
     if (this.root === null) return;
     if (typeof callback !== 'function')
@@ -140,7 +145,7 @@ export default class Tree {
     }
   }
 
-  // iteratively traverse the tree depth-first and call the callback on each node
+  // iteratively traverse the tree depth-first 'post order' (left, right, root) and call the callback on each node
   postOrderForEach(callback) {
     if (this.root === null) return;
     if (typeof callback !== 'function')
@@ -156,14 +161,71 @@ export default class Tree {
     traversed.reverse().forEach(callback);
   }
 
-  // returns the height of the node with given value (longest path from that node to leaf node)
-  height(value) {}
+  // iteratively return the height of the node with given value or null (height = number of edges from that node to its farthest leaf node)
+  height(value) {
+    if (value === null || value === undefined) return null;
+    let nodeCurrent = this.root;
+    while (nodeCurrent) {
+      if (nodeCurrent.data === value) break;
+      nodeCurrent =
+        value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
+    }
+    if (nodeCurrent === null) return null;
 
-  // returns the depth of the node with given value (number of edges from that node to the root)
-  depth(value) {}
+    const queue = new Queue();
+    queue.enqueue(nodeCurrent);
+    let level = 0;
+    let nodesAtLevel = 1;
+    while (!queue.isEmpty()) {
+      const nodeVisited = queue.dequeue().data;
+      nodesAtLevel -= 1;
+      if (nodeVisited.left) queue.enqueue(nodeVisited.left);
+      if (nodeVisited.right) queue.enqueue(nodeVisited.right);
+      if (nodesAtLevel === 0 && !queue.isEmpty()) {
+        level += 1;
+        nodesAtLevel = queue.size();
+      }
+    }
+    return level;
+  }
+
+  // iteratively return the depth of the node with given value or null (depth = number of edges from that node to the root)
+  depth(value) {
+    if (value === null || value === undefined) return null;
+    let counter = 0;
+    let nodeCurrent = this.root;
+    while (nodeCurrent) {
+      if (nodeCurrent.data === value) return counter;
+      nodeCurrent =
+        value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
+      counter += 1;
+    }
+    return null;
+  }
 
   // check if the tree is balanced
-  isBalanced() {}
+  isBalanced() {
+    if (this.root === null) return true;
+    return (
+      Math.abs(
+        this._heightRecursive(this.root.left) -
+          this._heightRecursive(this.root.right)
+      ) <= 1
+    );
+  }
+
+  // helper method for recursively finding the height of given node
+  _heightRecursive(root) {
+    if (root === null) return 0;
+    if (root.left === null && root.right === null) return 0;
+    return (
+      1 +
+      Math.max(
+        this._heightRecursive(root.left),
+        this._heightRecursive(root.right)
+      )
+    );
+  }
 
   // rebalance an unbalanced tree
   rebalance() {
