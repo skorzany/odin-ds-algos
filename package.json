@@ -9,6 +9,7 @@
   },
   "name": "odin-ds-algos",
   "version": "1.0.0",
+  "type": "module",
   "description": "A practice repository for implementing and working with some common data structures and algorithms.",
   "main": "index.js",
   "dependencies": {
