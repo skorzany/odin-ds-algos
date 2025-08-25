@@ -116,32 +116,59 @@ export default class Tree {
 
   // iteratively traverse the tree depth-first 'in order' (left, root, right) and call the callback on each node
   inOrderForEach(callback) {
+    // Morris traversal for O(1) space (no stack or queue)
     if (typeof callback !== 'function')
       throw new Error('No callback function provided');
-    const stack = [];
     let nodeCurrent = this.root;
-    while (stack.length || nodeCurrent) {
-      while (nodeCurrent) {
-        stack.push(nodeCurrent);
-        nodeCurrent = nodeCurrent.left;
+    while (nodeCurrent) {
+      if (nodeCurrent.left === null) {
+        callback(nodeCurrent);
+        nodeCurrent = nodeCurrent.right;
+      } else {
+        let inorderPredecessor = nodeCurrent.left;
+        while (
+          inorderPredecessor.right &&
+          inorderPredecessor.right !== nodeCurrent
+        )
+          inorderPredecessor = inorderPredecessor.right;
+        if (inorderPredecessor.right === null) {
+          inorderPredecessor.right = nodeCurrent;
+          nodeCurrent = nodeCurrent.left;
+        } else {
+          inorderPredecessor.right = null;
+          callback(nodeCurrent);
+          nodeCurrent = nodeCurrent.right;
+        }
       }
-      nodeCurrent = stack.pop();
-      callback(nodeCurrent);
-      nodeCurrent = nodeCurrent.right;
     }
   }
 
   // iteratively traverse the tree depth-first 'pre order' (root, left, right) and call the callback on each node
   preOrderForEach(callback) {
-    if (this.root === null) return;
+    // Morris traversal for O(1) space (no stack or queue)
     if (typeof callback !== 'function')
       throw new Error('No callback function provided');
-    const stack = [this.root];
-    while (stack.length) {
-      const nodeCurrent = stack.pop();
-      callback(nodeCurrent);
-      if (nodeCurrent.right) stack.push(nodeCurrent.right);
-      if (nodeCurrent.left) stack.push(nodeCurrent.left);
+    let nodeCurrent = this.root;
+    while (nodeCurrent) {
+      if (nodeCurrent.left === null) {
+        callback(nodeCurrent);
+        nodeCurrent = nodeCurrent.right;
+      } else {
+        let inorderPredecessor = nodeCurrent.left;
+        while (
+          inorderPredecessor.right &&
+          inorderPredecessor.right !== nodeCurrent
+        )
+          inorderPredecessor = inorderPredecessor.right;
+        if (inorderPredecessor.right === nodeCurrent) {
+          inorderPredecessor.right = null;
+          nodeCurrent = nodeCurrent.right;
+        } else {
+          callback(nodeCurrent);
+          inorderPredecessor.right = nodeCurrent;
+          nodeCurrent = nodeCurrent.left;
+        }
+      }
     }
   }
 
