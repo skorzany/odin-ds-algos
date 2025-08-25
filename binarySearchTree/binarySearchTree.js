@@ -231,26 +231,21 @@ export default class Tree {
 
   // check if the tree is balanced
   isBalanced() {
-    if (this.root === null) return true;
-    return (
-      Math.abs(
-        this._heightRecursive(this.root.left) -
-          this._heightRecursive(this.root.right)
-      ) <= 1
-    );
+    return this._balanceRecursive(this.root) >= 0;
   }
 
-  // helper method for recursively finding the height of given node
-  _heightRecursive(root) {
+  // returns the height of the tree or -1 if it is unbalanced
+  _balanceRecursive(root) {
     if (root === null) return 0;
-    if (root.left === null && root.right === null) return 0;
-    return (
-      1 +
-      Math.max(
-        this._heightRecursive(root.left),
-        this._heightRecursive(root.right)
-      )
-    );
+    const leftHeight = this._balanceRecursive(root.left);
+    const rightHeight = this._balanceRecursive(root.right);
+    if (
+      leftHeight === -1 ||
+      rightHeight === -1 ||
+      Math.abs(leftHeight - rightHeight) > 1
+    )
+      return -1;
+    return Math.max(leftHeight, rightHeight) + 1;
   }
 
   // rebalance an unbalanced tree
