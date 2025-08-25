@@ -31,30 +31,30 @@ export default class Tree {
     return root;
   }
 
-  // insert unique value into the tree
+  // insert *unique* value into the tree
   insert(value) {
     if (value === null || value === undefined) return;
-    let nodePrevious = null;
+    let nodeParent = null;
     let nodeCurrent = this.root;
     while (nodeCurrent) {
       if (nodeCurrent.data === value) return;
-      nodePrevious = nodeCurrent;
+      nodeParent = nodeCurrent;
       nodeCurrent =
         value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
     }
-    if (nodePrevious === null) this.root = new Node(value);
-    else if (value < nodePrevious.data) nodePrevious.left = new Node(value);
-    else nodePrevious.right = new Node(value);
+    if (nodeParent === null) this.root = new Node(value);
+    else if (value < nodeParent.data) nodeParent.left = new Node(value);
+    else nodeParent.right = new Node(value);
   }
 
-  // iteratively remove value from the tree
+  // iteratively remove the node with given value from the tree while keeping its balance
   deleteItem(value) {
     if (value === null || value === undefined) return;
-    let nodePrevious = null;
+    let nodeParent = null;
     let nodeCurrent = this.root;
     while (nodeCurrent) {
       if (nodeCurrent.data === value) break;
-      nodePrevious = nodeCurrent;
+      nodeParent = nodeCurrent;
       nodeCurrent =
         value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
     }
@@ -62,15 +62,15 @@ export default class Tree {
     if (nodeCurrent === null) return;
     // value has no children (leaf node)
     if (nodeCurrent.left === null && nodeCurrent.right === null) {
-      if (nodePrevious === null) this.root = null;
-      else if (value < nodePrevious.data) nodePrevious.left = null;
-      else nodePrevious.right = null;
+      if (nodeParent === null) this.root = null;
+      else if (value < nodeParent.data) nodeParent.left = null;
+      else nodeParent.right = null;
     }
     // value has one child
     else if (nodeCurrent.left === null || nodeCurrent.right === null) {
       const onlyChild = nodeCurrent.left ?? nodeCurrent.right;
-      if (nodeCurrent.data < nodePrevious.data) nodePrevious.left = onlyChild;
-      else nodePrevious.right = onlyChild;
+      if (nodeCurrent.data < nodeParent.data) nodeParent.left = onlyChild;
+      else nodeParent.right = onlyChild;
     }
     // both children present
     else {
@@ -81,9 +81,9 @@ export default class Tree {
         inorderSuccessor = inorderSuccessor.left;
       }
       nodeCurrent.data = inorderSuccessor.data;
-      if (inorderSuccessor.data < successorParent.data)
-        successorParent.left = inorderSuccessor.right;
-      else successorParent.right = inorderSuccessor.right;
+      if (successorParent === nodeCurrent)
+        successorParent.right = inorderSuccessor.right;
+      else successorParent.left = inorderSuccessor.right;
     }
   }
 
@@ -93,8 +93,8 @@ export default class Tree {
     let nodeCurrent = this.root;
     while (nodeCurrent) {
       if (nodeCurrent.data === value) break;
-      if (value < nodeCurrent.data) nodeCurrent = nodeCurrent.left;
-      else nodeCurrent = nodeCurrent.right;
+      nodeCurrent =
+        value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
     }
     return nodeCurrent;
   }
@@ -171,7 +171,6 @@ export default class Tree {
         value < nodeCurrent.data ? nodeCurrent.left : nodeCurrent.right;
     }
     if (nodeCurrent === null) return null;
-
     const queue = new Queue();
     queue.enqueue(nodeCurrent);
     let level = 0;

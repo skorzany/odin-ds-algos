@@ -56,6 +56,7 @@ console.log('=== unbalanced tree ===');
 console.log(prettyPrint(myTree.root));
 console.log('balance after insertion:', myTree.isBalanced());
 console.log('height of unbalanced tree root:', myTree.height(myTree.root.data)); // should match the current number of levels, counting from 0
+console.log('height of the leaf node:', myTree.height(500));
 
 myTree.rebalance();
 console.log('=== rebalanced tree ===');
@@ -74,6 +75,7 @@ myTree.inOrderForEach(printData);
 console.log('=== other methods ===');
 console.log('roots height:', myTree.height(myTree.root.data)); // should match the current number of levels, counting from 0
 console.log('roots depth:', myTree.depth(myTree.root.data));
+console.log('leaf node height:', myTree.height(500));
 console.log('find existing value:', myTree.find(346));
 console.log('find non-existing value:', myTree.find(-Math.PI));
 console.log('deleting root twice...');
