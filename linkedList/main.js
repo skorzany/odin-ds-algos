@@ -14,7 +14,7 @@ try {
 }
 list.append('cat');
 console.log(list.removeAt(0)); // Node('cat')
-console.log(list.toString()); // 'null'
+console.log(list.toString() === 'null'); // true
 list.append('cat');
 list.prepend('dog');
 list.append('parrot');
@@ -27,10 +27,10 @@ list.append('hamster');
 list.append('snake');
 list.append('turtle');
 console.log(list.toString()); // ( dog ) -> ( cat ) -> ( parrot ) -> ( hamster ) -> ( snake ) -> ( turtle ) -> null
-console.log(list.contains('trash')); // false
-console.log(list.find('cat')); // 1
-console.log(list.find('trash')); // null
-console.log(list.size()); // 6
+console.log(list.contains('trash') === false); // true
+console.log(list.find('cat') === 1); // true
+console.log(list.find('trash') === null); // true
+console.log(list.size() === 6); // true
 console.log(list.at(4)); // Node('snake')
 list.insertAt('beaver', 3);
 console.log(list.toString()); // ( dog ) -> ( cat ) -> ( parrot ) -> ( beaver ) -> ( hamster ) -> ( snake ) -> ( turtle ) -> null
@@ -46,10 +46,13 @@ try {
 }
 console.log(list.toString()); // should be same as before
 console.log(list.removeAt(list.find('beaver'))); // Node('beaver')
-console.log(list.find('beaver')); // null
-console.log(list.find('non-existent-value')); // null
-list.removeAt(null); // does nothing
-list.removeAt(list.find('non-existent-value')); // does nothing
+console.log(list.find('beaver') === null); // true
+console.log(list.find('non-existent-value') === null); // true
+try {
+  list.removeAt(list.find('non-existent-value'));
+} catch {
+  console.log('***removeAt with non-numeric index handled***');
+}
 console.log(list.toString()); // ( dog ) -> ( cat ) -> ( parrot ) -> ( hamster ) -> ( snake ) -> ( turtle ) -> null
 try {
   list.removeAt(-123);
@@ -62,12 +65,18 @@ try {
   console.log(`***removeAt with index out of bounds handled***`);
 }
 console.log(String(list)); // should be same as before
-list.removeAt('not a number'); // should do nothing
-list.removeAt([1, 2, 3]); // should do nothing as well
-list.insertAt('asfassf', null); // does nothing
-list.insertAt('kkkkk', [1]); // does nothing
-console.log(list.at('two')); // undefined
-console.log(list.toString()); // should be same as before
+try {
+  list.insertAt('asfassf', null);
+} catch {
+  console.log('***insertAt with non-numeric index handled***');
+}
+try {
+  console.log(list.at('two'));
+} catch {
+  console.log('***at with non-numeric index handled***');
+}
+list.insertAt(undefined, 2);
+console.log(list.toString()); // same as before
 list.insertAt('head', 0);
 try {
   list.insertAt('tail', list.size());
@@ -75,5 +84,6 @@ try {
   console.log('***insertAt with list size as index handled***');
 }
 list.insertAt('tail', list.size() - 1);
-list.insertAt(list.pop().value, list.size() - 1);
+console.log(list.toString()); // ( head ) -> ( dog ) -> ( cat ) -> ( parrot ) -> ( hamster ) -> ( snake ) -> ( tail ) -> ( turtle ) -> null
+list.insertAt(list.pop().data, list.size() - 1);
 console.log(list.toString()); // ( head ) -> ( dog ) -> ( cat ) -> ( parrot ) -> ( hamster ) -> ( snake ) -> ( turtle ) -> ( tail ) -> null
