@@ -16,23 +16,20 @@ export default class Queue {
   enqueue(value) {
     if (value === null || value === undefined) return;
     const nodeToAdd = new Node(value);
-    if (!this.head) [this.head, this.tail] = [nodeToAdd, nodeToAdd];
-    else {
-      this.tail.next = nodeToAdd;
-      this.tail = nodeToAdd;
-    }
+    if (this.isEmpty()) [this.head, this.tail] = [nodeToAdd, nodeToAdd];
+    else [this.tail.next, this.tail] = [nodeToAdd, nodeToAdd];
     this.length += 1;
   }
 
   // remove and return the node from the front of the queue
   dequeue() {
-    const nodeToRemove = this.head;
-    if (nodeToRemove) {
-      this.head = nodeToRemove.next;
+    const nodeFront = this.head;
+    if (nodeFront) {
+      this.head = nodeFront.next;
       if (this.head === null) this.tail = null;
       this.length -= 1;
     }
-    return nodeToRemove;
+    return nodeFront;
   }
 
   // return the first node without removing it
