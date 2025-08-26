@@ -231,20 +231,16 @@ export default class Tree {
 
   // check if the tree is balanced
   isBalanced() {
-    return this._balanceRecursive(this.root) >= 0;
+    return this._balanceRecursive(this.root) > -1;
   }
 
-  // returns the height of the tree or -1 if it is unbalanced
+  // returns the height of the tree or -1 if it's unbalanced
   _balanceRecursive(root) {
-    if (root === null) return 0;
+    if (root === null || (root.left === null && root.right === null)) return 0;
     const leftHeight = this._balanceRecursive(root.left);
+    if (leftHeight === -1) return -1;
     const rightHeight = this._balanceRecursive(root.right);
-    if (
-      leftHeight === -1 ||
-      rightHeight === -1 ||
-      Math.abs(leftHeight - rightHeight) > 1
-    )
-      return -1;
+    if (rightHeight === -1 || Math.abs(leftHeight - rightHeight) > 1) return -1;
     return Math.max(leftHeight, rightHeight) + 1;
   }
 
