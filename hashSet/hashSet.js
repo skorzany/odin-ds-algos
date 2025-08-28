@@ -1,7 +1,8 @@
+/* eslint-disable no-underscore-dangle */
 class Node {
   constructor(value) {
-    this.value = value;
-    this.nextNode = null;
+    this.data = value;
+    this.next = null;
   }
 }
 
@@ -9,130 +10,114 @@ export default class HashSet {
   constructor() {
     this.LOAD_FACTOR = 0.75;
     this.BASE_CAPACITY = 16;
-    this.capacity = this.BASE_CAPACITY;
-    this.valueCount = 0;
     this.buckets = new Array(this.BASE_CAPACITY);
+    this.capacityCurrent = this.BASE_CAPACITY;
+    this.valueCount = 0;
   }
 
-  // create and return a hash code for given value
+  // create and return the hash code for the given value (will throw an error if the value is not a string, or if the produced hashCode falls out of the current bounds)
   hash(value) {
+    if (typeof value !== 'string') throw new Error('Invalid value type');
     let hashCode = 0;
     const primeNumber = 31;
     for (let i = 0; i < value.length; i += 1) {
       hashCode = primeNumber * hashCode + value.charCodeAt(i);
-      hashCode %= this.capacity; // same reason as in the HashMap class
+      hashCode %= this.capacityCurrent; // same reason as in the HashMap class
     }
+    if (hashCode < 0 || this.capacityCurrent <= hashCode)
+      throw new Error('Trying to access index out of bounds');
     return hashCode;
   }
 
-  // add a value to the set
+  // add a *unique* value to the set
   add(value) {
     const index = this.hash(value);
-    if (index < 0 || this.capacity <= index)
-      throw new Error('Trying to access index out of bounds');
-    let nodeLast = this.buckets[index];
-    if (!nodeLast) this.buckets[index] = new Node(value);
-    else {
-      while (true) {
-        if (nodeLast.value === value) return;
-        else if (nodeLast.nextNode === null) {
-          nodeLast.nextNode = new Node(value);
-          break;
-        } else nodeLast = nodeLast.nextNode;
-      }
+    let nodeParent = null;
+    let nodeCurrent = this.buckets[index];
+    while (nodeCurrent) {
+      if (nodeCurrent.data === value) return;
+      [nodeParent, nodeCurrent] = [nodeCurrent, nodeCurrent.next];
     }
+    if (nodeParent === null) this.buckets[index] = new Node(value);
+    else nodeParent.next = new Node(value);
     this.valueCount += 1;
 
-    const isOverloaded = this.LOAD_FACTOR * this.capacity < this.valueCount;
-    if (isOverloaded) {
-      this.capacity *= 2;
-      this._rebuild();
-    }
+    const isOverloaded =
+      this.LOAD_FACTOR * this.capacityCurrent < this.valueCount;
+    if (isOverloaded) this._rebuild();
   }
 
-  // check if the set contains specific value
+  // check if the set contains the given value
   has(value) {
     const index = this.hash(value);
-    if (index < 0 || this.capacity <= index)
-      throw new Error('Trying to access index out of bounds');
-    let nodeLast = this.buckets[index];
-    while (nodeLast) {
-      if (nodeLast.value === value) return true;
-      nodeLast = nodeLast.nextNode;
+    let nodeCurrent = this.buckets[index];
+    while (nodeCurrent) {
+      if (nodeCurrent.data === value) return true;
+      nodeCurrent = nodeCurrent.next;
     }
     return false;
   }
 
-  // remove the value from the set & return true; false otherwise
+  // remove the node with the given value from the set & return true; false otherwise
   remove(value) {
     const index = this.hash(value);
-    if (index < 0 || this.capacity <= index)
-      throw new Error('Trying to access index out of bounds');
-    let nodeBefore = this.buckets[index];
-    if (!nodeBefore) return false;
-    else if (nodeBefore.value === value) {
-      this.buckets[index] = nodeBefore.nextNode ?? undefined;
+    let nodeParent = null;
+    let nodeCurrent = this.buckets[index];
+    while (nodeCurrent) {
+      if (nodeCurrent.data === value) break;
+      [nodeParent, nodeCurrent] = [nodeCurrent, nodeCurrent.next];
+    }
+    if (nodeCurrent) {
+      if (nodeParent === null) this.buckets[index] = undefined;
+      else nodeParent.next = nodeCurrent.next;
       this.valueCount -= 1;
       return true;
-    } else {
-      let nodeCurrent = nodeBefore.nextNode;
-      while (nodeCurrent) {
-        if (nodeCurrent.value === value) {
-          nodeBefore.nextNode = nodeCurrent.nextNode;
-          this.valueCount -= 1;
-          return true;
-        }
-        nodeBefore = nodeCurrent;
-        nodeCurrent = nodeBefore.nextNode;
-      }
-      return false;
     }
+    return false;
   }
 
-  // number of values stored in the set
+  // return the number of values stored in the set
   length() {
     return this.valueCount;
   }
 
-  // remove all values and restore the defaults
+  // remove all values from the set and restore the defaults
   clear() {
-    this.capacity = this.BASE_CAPACITY;
-    this.valueCount = 0;
     this.buckets = new Array(this.BASE_CAPACITY);
+    this.capacityCurrent = this.BASE_CAPACITY;
+    this.valueCount = 0;
   }
 
-  // return array with all values from the set
+  // return the array containing all of the values from the set
   values() {
-    let valuesSeen = [];
-    for (let i = 0; i < this.capacity; i += 1) {
-      let nodeCurrent = this.buckets[i];
+    const valuesSeen = [];
+    this.buckets.forEach((bucket) => {
+      let nodeCurrent = bucket;
       while (nodeCurrent) {
-        valuesSeen.push(nodeCurrent.value);
-        nodeCurrent = nodeCurrent.nextNode;
+        valuesSeen.push(nodeCurrent.data);
+        nodeCurrent = nodeCurrent.next;
       }
-    }
+    });
     return valuesSeen;
   }
 
-  // repopulate the enlarged bucket array
+  // double the current capacity and recreate the new buckets array from the old one
   _rebuild() {
-    const newBuckets = new Array(this.capacity);
-    for (let i = 0; i < this.buckets.length; i += 1) {
-      let nodeOld = this.buckets[i];
+    this.capacityCurrent *= 2;
+    const newBuckets = new Array(this.capacityCurrent);
+    this.buckets.forEach((bucket) => {
+      let nodeOld = bucket;
       while (nodeOld) {
-        const newIndex = this.hash(nodeOld.value);
-        if (newIndex < 0 || this.capacity <= newIndex)
-          throw new Error('Trying to access index out of bounds');
-        const nodeToAdd = new Node(nodeOld.value);
-        let nodeNewLast = newBuckets[newIndex];
-        if (!nodeNewLast) newBuckets[newIndex] = nodeToAdd;
-        else {
-          while (nodeNewLast.nextNode) nodeNewLast = nodeNewLast.nextNode;
-          nodeNewLast.nextNode = nodeToAdd;
-        }
-        nodeOld = nodeOld.nextNode;
+        const newIndex = this.hash(nodeOld.data);
+        let nodeParent = null;
+        let nodeCurrent = newBuckets[newIndex];
+        while (nodeCurrent)
+          [nodeParent, nodeCurrent] = [nodeCurrent, nodeCurrent.next];
+        if (nodeParent === null) newBuckets[newIndex] = new Node(nodeOld.data);
+        else nodeParent.next = new Node(nodeOld.data);
+        nodeOld = nodeOld.next;
       }
-    }
+    });
     this.buckets = newBuckets;
   }
 }
